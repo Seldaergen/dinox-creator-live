@@ -11,7 +11,7 @@ function App() {
   const [tokenAddress, setTokenAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const [provider, setProvider] = useState(null);
-  const [publicKey, setPublicKey] = useState(null);
+  const [walletAddress, setWalletAddress] = useState(null);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -24,7 +24,7 @@ function App() {
       }
       const resp = await sol.connect();
       if (!resp.publicKey) throw new Error("publicKey alınamadı");
-      setPublicKey(resp.publicKey);
+      setWalletAddress(resp.publicKey);
       setProvider(sol);
       alert('✅ Cüzdan bağlandı!');
     } catch (err) {
@@ -34,7 +34,7 @@ function App() {
   };
 
   const createToken = async () => {
-    if (!provider || !publicKey) {
+    if (!provider || !walletAddress) {
       alert('Lütfen önce Phantom cüzdanınızı bağlayın.');
       return;
     }
@@ -47,13 +47,13 @@ function App() {
     const userShare = totalSupply - creatorShare;
 
     try {
-      const mint = await createMint(connection, provider, publicKey, null, decimals);
+      const mint = await createMint(connection, provider, walletAddress, null, decimals);
 
       const userTokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
         provider,
         mint,
-        publicKey
+        walletAddress
       );
 
       const creatorTokenAccount = await getOrCreateAssociatedTokenAccount(
@@ -63,8 +63,8 @@ function App() {
         CREATOR_WALLET
       );
 
-      await mintTo(connection, provider, mint, userTokenAccount.address, publicKey, userShare);
-      await mintTo(connection, provider, mint, creatorTokenAccount.address, publicKey, creatorShare);
+      await mintTo(connection, provider, mint, userTokenAccount.address, provider, userShare);
+      await mintTo(connection, provider, mint, creatorTokenAccount.address, provider, creatorShare);
 
       setTokenAddress(mint.toBase58());
       alert('🎉 Token başarıyla oluşturuldu!');
@@ -80,7 +80,7 @@ function App() {
     <div className="min-h-screen bg-black text-white p-8 font-sans">
       <h1 className="text-3xl font-bold mb-6 text-green-400">🦖 DinoX Token Creator</h1>
       <button onClick={connectWallet} className="mb-4 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded">
-        {publicKey ? '✅ Cüzdan Bağlandı' : '🔌 Phantom Cüzdanı Bağla'}
+        {walletAddress ? '✅ Cüzdan Bağlandı' : '🔌 Phantom Cüzdanı Bağla'}
       </button>
       <div className="space-y-4">
         <input name="name" placeholder="Token Name" onChange={handleChange} className="w-full p-3 bg-gray-800 rounded" />
