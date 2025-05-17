@@ -1,1 +1,1 @@
-export { default } from '../src/DinoxApp';
+export { default } from '../src/App';
