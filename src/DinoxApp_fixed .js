@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Connection, clusterApiUrl, Keypair, PublicKey } from '@solana/web3.js';
+import { Connection, clusterApiUrl, PublicKey, Keypair } from '@solana/web3.js';
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token';
 
 const network = clusterApiUrl('devnet');
@@ -9,29 +9,27 @@ const CREATOR_WALLET = new PublicKey('DXVMtmj9WaZzZzFV1XpXtiorhHkM8qyebgnvTEVp2R
 function App() {
   const [form, setForm] = useState({ name: '', symbol: '', supply: '', decimals: 9 });
   const [tokenAddress, setTokenAddress] = useState('');
-  const [wallet, setWallet] = useState(null);
+  const [walletAddress, setWalletAddress] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const connectWallet = async () => {
-    if ('solana' in window) {
+    try {
       const provider = window.solana;
-      if (provider.isPhantom) {
-        try {
-          const resp = await provider.connect();
-          setWallet(resp.publicKey);
-        } catch (err) {
-          alert('Cüzdan bağlantısı reddedildi.');
-        }
+      if (!provider || !provider.isPhantom) {
+        alert('Phantom cüzdanı bulunamadı.');
+        return;
       }
-    } else {
-      alert('Phantom cüzdan bulunamadı. Lütfen kurun.');
+      const resp = await provider.connect();
+      setWalletAddress(resp.publicKey);
+    } catch (err) {
+      alert('Cüzdan bağlantısı reddedildi.');
     }
   };
 
   const createToken = async () => {
-    if (!wallet) return alert('Lütfen önce Phantom cüzdanınızı bağlayın.');
+    if (!walletAddress) return alert('Lütfen önce cüzdanınızı bağlayın.');
 
     setLoading(true);
     const connection = new Connection(network, 'confirmed');
@@ -41,24 +39,46 @@ function App() {
     const userShare = totalSupply - creatorShare;
 
     try {
-      const mint = await createMint(connection, null, wallet, null, decimals);
+      const provider = window.solana;
+      const mint = await createMint(
+        connection,
+        provider,
+        walletAddress,
+        null,
+        decimals
+      );
 
       const userTokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
-        null,
+        provider,
         mint,
-        wallet
+        walletAddress
       );
 
       const creatorTokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
-        null,
+        provider,
         mint,
         CREATOR_WALLET
       );
 
-      await mintTo(connection, null, mint, userTokenAccount.address, wallet, userShare);
-      await mintTo(connection, null, mint, creatorTokenAccount.address, wallet, creatorShare);
+      await mintTo(
+        connection,
+        provider,
+        mint,
+        userTokenAccount.address,
+        walletAddress,
+        userShare
+      );
+
+      await mintTo(
+        connection,
+        provider,
+        mint,
+        creatorTokenAccount.address,
+        walletAddress,
+        creatorShare
+      );
 
       setTokenAddress(mint.toBase58());
       alert('✅ Token başarıyla oluşturuldu!');
@@ -78,7 +98,7 @@ function App() {
         onClick={connectWallet}
         className="mb-4 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded"
       >
-        {wallet ? '✅ Cüzdan Bağlandı' : '🔌 Phantom Cüzdanı Bağla'}
+        {walletAddress ? '✅ Cüzdan Bağlandı' : '🔌 Phantom Cüzdanı Bağla'}
       </button>
 
       <div className="space-y-4">
