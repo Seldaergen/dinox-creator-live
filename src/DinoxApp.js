@@ -1,1 +1,1 @@
-// DINOX App bileşeni buraya eklenecek.
+// DINOX App bileşeni buraya entegre edilecek.
