@@ -9,10 +9,10 @@
   },
   "dependencies": {
     "@solana/spl-token": "^0.3.5",
-    "@solana/wallet-adapter-base": "^0.9.20",
+    "@solana/wallet-adapter-base": "^0.9.19",
     "@solana/wallet-adapter-react": "^0.15.4",
-    "@solana/wallet-adapter-react-ui": "^0.9.18",
-    "@solana/wallet-adapter-wallets": "^0.9.20",
+    "@solana/wallet-adapter-react-ui": "^0.9.17",
+    "@solana/wallet-adapter-wallets": "^0.9.12",
     "@solana/web3.js": "^1.82.2",
     "next": "13.4.19",
     "react": "18.2.0",
